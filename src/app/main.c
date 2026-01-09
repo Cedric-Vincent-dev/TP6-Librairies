@@ -32,8 +32,8 @@ int main(){
     break;
 
   case 2:
-    printf("Static: %.2f - %.2f = %.2f\n", nombre1, nombre2, staticSoustraction(nombre1, nombre2));
-    printf("Dynamic: %.2f - %.2f = %.2f\n", nombre1, nombre2, dynamicSoustraction(nombre1, nombre2));
+    printf("Static: %.2f - %.2f = %.2f\n", nombre1, nombre2, staticSubtraction(nombre1, nombre2));
+    printf("Dynamic: %.2f - %.2f = %.2f\n", nombre1, nombre2, dynamicSubtraction(nombre1, nombre2));
     break;
 
   case 3:
