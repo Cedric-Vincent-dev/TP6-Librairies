@@ -1,0 +1,15 @@
+# Fichiers objets
+*.o
+
+# Fichiers de sauvegarde éditeur (nano, vim, Emacs ...)
+*~
+*.swp
+*.tmp
+
+# Bibliothèques génèrées
+*.a
+*.so
+
+# Dossiers de build / binaires
+build/
+bin/
