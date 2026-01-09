@@ -1,36 +1,58 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -O2
-PICFLAGS = -fPIC
 
-STATIC_DIR = src/lib/staticCalculatrice
-DYN_DIR = src/lib/dynamicCalculatrice
-APP = src/app/main.c
-BIN = bin/calculatrice
 
-STATIC_OBJS = $(STATIC_DIR)/static_addition.o $(STATIC_DIR)/static_soustraction.o $(STATIC_DIR)/static_multiplication.o $(STATIC_DIR)/static_division.o
-DYN_OBJS = $(DYN_DIR)/dynamic_addition.o $(DYN_DIR)/dynamic_soustraction.o $(DYN_DIR)/dynamic_multiplication.o $(DYN_DIR)/dynamic_division.o
+# Dossiers
+SRC_DIR = src
+APP_DIR = $(SRC_DIR)/app
+STATIC_DIR = $(SRC_DIR)/lib/staticCalculatrice
+DYNAMIC_DIR = $(SRC_DIR)/lib/dynamicCalculatrice
+BIN_DIR = bin
 
-all: $(STATIC_DIR)/libstaticCalculatrice.a $(DYN_DIR)/libdynamicCalculatrice.so $(BIN)
+# Fichiers
+STATIC_LIB = $(STATIC_DIR)/libstaticCalculatrice.a
+DYNAMIC_LIB = $(DYNAMIC_DIR)/libdynamicCalculatrice.so
+MAIN = $(APP_DIR)/main.c
+OUTPUT = $(BIN_DIR)/calculatrice
 
-$(STATIC_DIR)/libstaticCalculatrice.a: $(STATIC_OBJS)
+# Règle principale
+all: $(STATIC_LIB) $(DYNAMIC_LIB) $(OUTPUT)
+
+# Librairie statique
+$(STATIC_LIB): $(STATIC_DIR)/static_calculatrice.o
 	ar rcs $@ $^
 
-$(DYN_DIR)/libdynamicCalculatrice.so: $(DYN_OBJS)
-	$(CC) -shared -o $@ $^
-
-$(STATIC_DIR)/%.o: $(STATIC_DIR)/%.c
+$(STATIC_DIR)/static_calculatrice.o: $(STATIC_DIR)/static_calculatrice.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(DYN_DIR)/%.o: $(DYN_DIR)/%.c
-	$(CC) $(CFLAGS) $(PICFLAGS) -c $< -o $@
+# Librairie dynamique
+$(DYNAMIC_LIB): $(DYNAMIC_DIR)/dynamic_calculatrice.o
+	$(CC) -shared -o $@ $^
 
-$(BIN): $(APP) $(STATIC_DIR)/libstaticCalculatrice.a $(DYN_DIR)/libdynamicCalculatrice.so
-	$(CC) $(APP) -Isrc/lib/staticCalculatrice -Isrc/lib/dynamicCalculatrice \
-	-L$(STATIC_DIR) -lstaticCalculatrice -L$(DYN_DIR) -ldynamicCalculatrice -o $(BIN)
+$(DYNAMIC_DIR)/dynamic_calculatrice.o: $(DYNAMIC_DIR)/dynamic_calculatrice.c
+	$(CC) $(CFLAGS) -fPIC -c $< -o $@
 
-run: all
-	LD_LIBRARY_PATH=$(DYN_DIR) ./$(BIN)
+# Compilation du main
+$(OUTPUT): $(MAIN)
+	mkdir -p $(BIN_DIR)
+	$(CC) $(MAIN) -I$(STATIC_DIR) -I$(DYNAMIC_DIR) \
+	-L$(STATIC_DIR) -lstaticCalculatrice \
+	-L$(DYNAMIC_DIR) -ldynamicCalculatrice \
+	-o $(OUTPUT)
 
+
+# Exécution
+run: 
+	LD_LIBRARY__PATH=$(DYNAMIC_DIR) ./$(OUTPUT)
+
+# Nettoyage
 clean:
-	rm -f $(STATIC_OBJS) $(DYN_OBJS) $(BIN) \
-	$(STATIC_DIR)/libstaticCalculatrice.a $(DYN_DIR)/libdynamicCalculatrice.so
+	rm -f $(STATIC_DIR)/*.o
+	rm -f $(DYNAMIC_DIR)/*.o
+	rm -f $(STATIC_LIB)
+	rm -f $(DYNAMIC_LIB)
+	rm -rf $(BIN_DIR)
+
+.PHONY: all clean run
+
+
